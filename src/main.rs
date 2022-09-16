@@ -1,3 +1,6 @@
+use std::io;
+use std::io::Write;
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum Token {
     INTEGER(i32),
@@ -92,9 +95,19 @@ impl Interpreter {
 }
 
 fn main() {
-    let text = String::from("5-9");
-    let mut interpreter = Interpreter::new(text);
-    println!("5 - 9 = {:?}", interpreter.expr());
+    loop {
+        let mut input = String::new();
+
+        let _ = io::stdout().write(b">>> ");
+        let _ = io::stdout().flush();
+
+        io::stdin().read_line(&mut input).unwrap();
+
+        let text = String::from(input.trim());
+        let mut interpreter = Interpreter::new(text);
+        let result = interpreter.expr();
+        println!("{}", result);
+    }
 }
 
 #[test]
