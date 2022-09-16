@@ -14,7 +14,7 @@ pub struct Interpreter {
 
 impl Interpreter {
     fn new(input: String) -> Interpreter {
-        let mut interpreter = Interpreter {
+        let interpreter = Interpreter {
             input: input,
             current_pos: 0,
             current_token: None,
@@ -57,7 +57,7 @@ impl Interpreter {
     }
 
     fn expr(&mut self) -> i32 {
-        let mut result: i32 = 0;
+        let mut result: i32;
         self.current_token = Some(self.get_next_token());
         let lhs = self.current_token.clone().unwrap();
         match lhs {
