@@ -137,9 +137,28 @@ fn main() {
     }
 }
 
-#[test]
-fn test_interpreter() {
-    let text = String::from("5-9");
-    let mut interpreter = Interpreter::new(text);
-    assert_eq!(interpreter.expr(), -4);
+#[cfg(test)]
+mod tests {
+    use crate::Interpreter;
+
+    #[test]
+    fn test_basic_addition() {
+        let text = String::from("5+9");
+        let mut interpreter = Interpreter::new(text);
+        assert_eq!(interpreter.expr(), 14);
+    }
+
+    #[test]
+    fn test_basic_substraction_with_multiple_whitespaces() {
+        let text = String::from("   5              -   3");
+        let mut interpreter = Interpreter::new(text);
+        assert_eq!(interpreter.expr(), 2);
+    }
+
+    #[test]
+    fn test_mutiple_additions_and_substractions() {
+        let text = String::from("5 + 9 - 3 - 1 + 2 -4");
+        let mut interpreter = Interpreter::new(text);
+        assert_eq!(interpreter.expr(), 8);
+    }
 }
