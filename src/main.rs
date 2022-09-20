@@ -10,87 +10,114 @@ enum Token {
 }
 
 pub struct Interpreter {
-    input: String,
+    input: String, // TODO - move it out the state
     current_pos: i32,
     current_token: Option<Token>,
+    current_char: Option<char>,
 }
 
 impl Interpreter {
     fn new(input: String) -> Interpreter {
-        let interpreter = Interpreter {
+        let mut interpreter = Interpreter {
             input: input,
-            current_pos: 0,
+            current_pos: -1,
             current_token: None,
+            current_char: None,
         };
+        interpreter.advance();
+
         interpreter
     }
 
-    fn get_next_token(&mut self) -> Token {
-        if self.current_pos > self.input.len() as i32 - 1 {
-            return Token::EOF
+    fn expr(&mut self) -> i32 {
+        self.current_token = Some(self.get_next_token());
+        let mut result = self.term();
+
+        while self.current_token.clone().unwrap() == Token::PLUS || self.current_token.clone().unwrap() == Token::MINUS {
+            match self.current_token.clone().unwrap() {
+                Token::PLUS => {
+                    self.eat(Token::PLUS);
+                    result += self.term();
+                },
+                Token::MINUS => {
+                    self.eat(Token::MINUS);
+                    result -= self.term();
+                },
+                _ => panic!("Invalid syntax"),
+            }
         }
-
-        let current_char = self.input.as_bytes()[self.current_pos as usize] as char;
-
-        if current_char.is_digit(10) {
-            self.current_pos += 1;
-            return Token::INTEGER(current_char.to_digit(10).unwrap() as i32);
-        }
-
-        if current_char == '+' {
-            self.current_pos += 1;
-            return Token::PLUS;
-        }
-
-        if current_char == '-' {
-            self.current_pos += 1;
-            return Token::MINUS;
-        }
-
-        // panic or error
-        Token::EOF
-
+        return result;
     }
+
+    fn get_next_token(&mut self) -> Token {
+        while self.current_char != None {
+            if self.current_char.unwrap().is_whitespace() {
+                self.advance();
+                continue;
+            }
+
+            if self.current_char.unwrap().is_digit(10) {
+                return Token::INTEGER(self.integer());
+            }
+
+            match self.current_char.unwrap() {
+                '+' => {
+                    self.advance();
+                    return Token::PLUS;
+                },
+                '-' => {
+                    self.advance();
+                    return Token::MINUS;
+                },
+                _ => panic!("Invalid character"),
+            }
+        }
+
+        Token::EOF
+    }
+
+    fn advance(&mut self) {
+        self.current_pos += 1;
+        if self.current_pos > self.input.len() as i32 - 1 {
+            self.current_char = None;
+        }
+        else {
+            self.current_char = Some(self.input.as_bytes()[self.current_pos as usize] as char);
+        }
+    }
+
+        // TODO - transform this into string and avoid break statement
+        fn integer(&mut self) -> i32 {
+            let mut result = String::new();
+            while let Some(current_char) = self.current_char {
+                if current_char.is_digit(10) {
+                    result.push(current_char);
+                    self.advance();
+                } else {
+                    break;
+                }
+            }
+
+            result.parse::<i32>().unwrap()
+        }
 
     fn eat(&mut self, token: Token) {
         if token == self.current_token.clone().unwrap() {
             self.current_token = Some(self.get_next_token());
         }
-        // else error
+        else {
+            panic!("Invalid token");
+        }
     }
 
-    fn expr(&mut self) -> i32 {
-        let mut result: i32;
-        self.current_token = Some(self.get_next_token());
-        let lhs = self.current_token.clone().unwrap();
-        match lhs {
+    fn term(&mut self) -> i32 {
+        match self.current_token.clone().unwrap() {
             Token::INTEGER(i) => {
                 self.eat(Token::INTEGER(i));
-                result = i;
+                return i;
             },
-            _ => panic!("Invalid syntax"),
+            _ => panic!("Invalid term"),
         }
-        let op = self.current_token.clone().unwrap();
-        if op == Token::PLUS {
-            self.eat(Token::PLUS);
-        }
-        else {
-            self.eat(Token::MINUS);
-        }
-        let rhs = self.current_token.clone().unwrap();
-        match rhs {
-            Token::INTEGER(i) => {
-                self.eat(Token::INTEGER(i));
-                if op == Token::PLUS {
-                    result += i;
-                }
-                else {
-                    result -= i;
-                }
-            },
-            _ => panic!("Invalid syntax"),
-        }
-        return result;
     }
 }
 
