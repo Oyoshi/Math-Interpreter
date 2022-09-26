@@ -6,47 +6,27 @@ enum Token {
     INTEGER(i32),
     PLUS,
     MINUS,
+    MUL,
+    DIV,
     EOF,
 }
 
-pub struct Interpreter {
-    input: String, // TODO - move it out the state
+pub struct Lexer {
+    input: String,
     current_pos: i32,
-    current_token: Option<Token>,
     current_char: Option<char>,
 }
 
-impl Interpreter {
-    fn new(input: String) -> Interpreter {
-        let mut interpreter = Interpreter {
+impl Lexer {
+    fn new(input: String) -> Lexer {
+        let mut lexer = Lexer {
             input: input,
             current_pos: -1,
-            current_token: None,
             current_char: None,
         };
-        interpreter.advance();
+        lexer.advance();
 
-        interpreter
-    }
-
-    fn expr(&mut self) -> i32 {
-        self.current_token = Some(self.get_next_token());
-        let mut result = self.term();
-
-        while self.current_token.clone().unwrap() == Token::PLUS || self.current_token.clone().unwrap() == Token::MINUS {
-            match self.current_token.clone().unwrap() {
-                Token::PLUS => {
-                    self.eat(Token::PLUS);
-                    result += self.term();
-                },
-                Token::MINUS => {
-                    self.eat(Token::MINUS);
-                    result -= self.term();
-                },
-                _ => panic!("Invalid syntax"),
-            }
-        }
-        return result;
+        lexer
     }
 
     fn get_next_token(&mut self) -> Token {
@@ -64,11 +44,19 @@ impl Interpreter {
                 '+' => {
                     self.advance();
                     return Token::PLUS;
-                },
+                }
                 '-' => {
                     self.advance();
                     return Token::MINUS;
-                },
+                }
+                '*' => {
+                    self.advance();
+                    return Token::MUL;
+                }
+                '/' => {
+                    self.advance();
+                    return Token::DIV;
+                }
                 _ => panic!("Invalid character"),
             }
         }
@@ -80,46 +68,106 @@ impl Interpreter {
         self.current_pos += 1;
         if self.current_pos > self.input.len() as i32 - 1 {
             self.current_char = None;
-        }
-        else {
+        } else {
             self.current_char = Some(self.input.as_bytes()[self.current_pos as usize] as char);
         }
     }
 
-        // TODO - transform this into string and avoid break statement
-        fn integer(&mut self) -> i32 {
-            let mut result = String::new();
-            while let Some(current_char) = self.current_char {
-                if current_char.is_digit(10) {
-                    result.push(current_char);
-                    self.advance();
-                } else {
-                    break;
-                }
+    // TODO - refactor this method
+    fn integer(&mut self) -> i32 {
+        let mut result = String::new();
+        while let Some(current_char) = self.current_char {
+            if current_char.is_digit(10) {
+                result.push(current_char);
+                self.advance();
+            } else {
+                break;
             }
-
-            result.parse::<i32>().unwrap()
         }
 
-    fn eat(&mut self, token: Token) {
-        if token == self.current_token.clone().unwrap() {
-            self.current_token = Some(self.get_next_token());
+        result.parse::<i32>().unwrap()
+    }
+}
+
+pub struct Interpreter {
+    lexer: Lexer,
+    current_token: Token,
+}
+
+impl Interpreter {
+    fn new(lexer: Lexer) ->Interpreter  {
+        let mut interpreter = Interpreter {
+            lexer: lexer,
+            current_token: Token::EOF,
+        };
+        interpreter.current_token = interpreter.lexer.get_next_token();
+
+        interpreter
+    }
+
+    fn expr(&mut self) -> i32 {
+        let mut result = self.term();
+
+        while self.current_token.clone() == Token::PLUS
+            || self.current_token.clone() == Token::MINUS
+        {
+            match self.current_token.clone() {
+                Token::PLUS => {
+                    self.eat(Token::PLUS);
+                    result += self.term();
+                }
+                Token::MINUS => {
+                    self.eat(Token::MINUS);
+                    result -= self.term();
+                }
+                _ => panic!("Invalid syntax"),
+            }
         }
-        else {
-            panic!("Invalid token");
-        }
+
+        result
     }
 
     fn term(&mut self) -> i32 {
-        match self.current_token.clone().unwrap() {
+        let mut result = self.factor();
+
+        while self.current_token.clone() == Token::MUL
+            || self.current_token.clone() == Token::DIV
+        {
+            match self.current_token.clone() {
+                Token::MUL => {
+                    self.eat(Token::MUL);
+                    result *= self.term();
+                }
+                Token::DIV => {
+                    self.eat(Token::DIV);
+                    result /= self.term();
+                }
+                _ => panic!("Invalid syntax"),
+            }
+        }
+
+        result
+    }
+
+    fn factor(&mut self) -> i32 {
+        match self.current_token.clone() {
             Token::INTEGER(i) => {
                 self.eat(Token::INTEGER(i));
                 return i;
-            },
-            _ => panic!("Invalid term"),
+            }
+            _ => panic!("Invalid factor"),
+        }
+    }
+
+    fn eat(&mut self, token: Token) {
+        if token == self.current_token.clone() {
+            self.current_token = self.lexer.get_next_token();
+        } else {
+            panic!("Invalid syntax");
         }
     }
 }
+
 
 fn main() {
     loop {
@@ -131,12 +179,14 @@ fn main() {
         io::stdin().read_line(&mut input).unwrap();
 
         let text = String::from(input.trim());
-        let mut interpreter = Interpreter::new(text);
+        let lexer = Lexer::new(text);
+        let mut interpreter = Interpreter::new(lexer);
         let result = interpreter.expr();
         println!("{}", result);
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use crate::Interpreter;
@@ -162,3 +212,4 @@ mod tests {
         assert_eq!(interpreter.expr(), 8);
     }
 }
+*/
