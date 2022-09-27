@@ -5,6 +5,8 @@ pub enum Token {
     MINUS,
     MUL,
     DIV,
+    LPAREN,
+    RPAREN,
     EOF,
 }
 
@@ -53,6 +55,14 @@ impl Lexer {
                 '/' => {
                     self.advance();
                     return Token::DIV;
+                }
+                '(' => {
+                    self.advance();
+                    return Token::LPAREN;
+                }
+                ')' => {
+                    self.advance();
+                    return Token::RPAREN;
                 }
                 _ => panic!("Invalid character"),
             }

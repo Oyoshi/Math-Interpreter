@@ -65,6 +65,12 @@ impl Interpreter {
                 self.eat(Token::INTEGER(i));
                 return i;
             }
+            Token::LPAREN => {
+                self.eat(Token::LPAREN);
+                let result = self.expr();
+                self.eat(Token::RPAREN);
+                return result;
+            }
             _ => panic!("Invalid factor"),
         }
     }
