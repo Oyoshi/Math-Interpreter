@@ -1,5 +1,4 @@
-use crate::ast::ASTNode;
-use crate::ast::ASTNodeType;
+use crate::ast::{ASTNode, ASTNodeType};
 use crate::parser::Parser;
 use crate::token::Token;
 
