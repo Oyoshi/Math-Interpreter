@@ -2,13 +2,19 @@
 
 Prototype of a math interpreter. Because this project was created only for the learning purpose so there are some limitations.
 
-TODO - list limitations
+1. Supports five binary operators: `+`, `-`, `*`, `/`, `^`
+2. Supports two unary operators: `+`, `-`
+3. Supports only integers (`i32`) - sorry :trollface:
 
 ## Demo
 TODO
 
-## Build & Run :worker:
-TODO
+## Build & Run :construction_worker:
+
+1. Build unoptimized with debug info: `cargo build`
+2. Build optimized production: `cargo build --release`
+3. Run all tests: `cargo test`
+
 
 ## Flow
 
@@ -25,8 +31,8 @@ term   : factor ((MUL | DIV) power)*
 factor : (PLUS | MINUS) factor | INTEGER | LPAREN expr RPAREN
 ```
 
-## references:
+## References:
 
-1. [Ruslans Blog](https://ruslanspivak.com/)
-2. [EBNF](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form)
-3. [Exponentiation By Squaring](https://en.wikipedia.org/wiki/Exponentiation_by_squaring)
+1. https://ruslanspivak.com/
+2. https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
+3. https://en.wikipedia.org/wiki/Exponentiation_by_squaring
