@@ -1,4 +1,5 @@
 use crate::ast::ASTNode;
+use crate::ast::ASTNodeType;
 use crate::parser::Parser;
 use crate::token::Token;
 
@@ -21,14 +22,16 @@ impl Interpreter {
     }
 
     fn visit(&self, node: &ASTNode) -> i32 {
-        match node.token {
-            Token::INTEGER(_) => {
+        match node.node_type {
+            ASTNodeType::INTEGER => {
                 return self.visit_num(node);
             }
-            Token::PLUS | Token::MINUS | Token::MUL | Token::DIV => {
+            ASTNodeType::BINOP => {
                 return self.visit_binop(node);
             }
-            _ => panic!("Visitor unmatch"),
+            ASTNodeType::UNOP => {
+                return self.visit_unop(node);
+            }
         }
     }
 
@@ -48,6 +51,20 @@ impl Interpreter {
             }
             Token::DIV => {
                 return left_val / right_val;
+            }
+            _ => panic!("Visitor unmatch"),
+        }
+    }
+
+    fn visit_unop(&self, node: &ASTNode) -> i32 {
+        let val = self.visit(&node.children[0]);
+
+        match node.token {
+            Token::PLUS => {
+                return val;
+            }
+            Token::MINUS => {
+                return -val;
             }
             _ => panic!("Visitor unmatch"),
         }
@@ -90,8 +107,8 @@ mod tests {
 
     #[test]
     fn test_complex_expression_with_parenthesis() {
-        let text = String::from("(3*     (4 - 1) + 6)    *   2");
+        let text = String::from("(3*     -(4 - 1) + 6)    *   2");
         let mut interpreter = Interpreter::new(&text);
-        assert_eq!(interpreter.interpret(), 30);
+        assert_eq!(interpreter.interpret(), -6);
     }
 }

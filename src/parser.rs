@@ -1,4 +1,5 @@
 use crate::ast::ASTNode;
+use crate::ast::ASTNodeType;
 use crate::lexer::Lexer;
 use crate::token::Token;
 
@@ -30,19 +31,19 @@ impl Parser {
                 Token::PLUS => {
                     self.eat(Token::PLUS);
                     let children: Vec<ASTNode> = vec![node, self.term()];
-                    node = ASTNode::new(Token::PLUS, children);
+                    node = ASTNode::new(ASTNodeType::BINOP, Token::PLUS, children);
                 }
                 Token::MINUS => {
                     self.eat(Token::MINUS);
                     let children: Vec<ASTNode> = vec![node, self.term()];
-                    node = ASTNode::new(Token::MINUS, children);
+                    node = ASTNode::new(ASTNodeType::BINOP, Token::MINUS, children);
                 }
                 _ => panic!("Invalid syntax"),
             }
         }
 
         if node.token == Token::EOF {
-            node = ASTNode::new(Token::INTEGER(0), vec![]);
+            node = ASTNode::new(ASTNodeType::INTEGER, Token::INTEGER(0), vec![]);
         }
 
         node
@@ -56,12 +57,12 @@ impl Parser {
                 Token::MUL => {
                     self.eat(Token::MUL);
                     let children: Vec<ASTNode> = vec![node, self.factor()];
-                    node = ASTNode::new(Token::MUL, children);
+                    node = ASTNode::new(ASTNodeType::BINOP, Token::MUL, children);
                 }
                 Token::DIV => {
                     self.eat(Token::DIV);
                     let children: Vec<ASTNode> = vec![node, self.factor()];
-                    node = ASTNode::new(Token::DIV, children);
+                    node = ASTNode::new(ASTNodeType::BINOP, Token::DIV, children);
                 }
                 _ => panic!("Invalid syntax"),
             }
@@ -72,10 +73,18 @@ impl Parser {
 
     fn factor(&mut self) -> ASTNode {
         match self.current_token {
+            Token::PLUS => {
+                self.eat(Token::PLUS);
+                return ASTNode::new(ASTNodeType::UNOP, Token::PLUS, vec![self.factor()]);
+            }
+            Token::MINUS => {
+                self.eat(Token::MINUS);
+                return ASTNode::new(ASTNodeType::UNOP, Token::MINUS, vec![self.factor()]);
+            }
             Token::INTEGER(i) => {
                 let token = self.current_token.clone();
                 self.eat(Token::INTEGER(i));
-                return ASTNode::new(token, vec![]);
+                return ASTNode::new(ASTNodeType::INTEGER, token, vec![]);
             }
             Token::LPAREN => {
                 self.eat(Token::LPAREN);
@@ -84,7 +93,7 @@ impl Parser {
                 return node;
             }
             Token::EOF => {
-                return ASTNode::new(Token::EOF, vec![]);
+                return ASTNode::new(ASTNodeType::INTEGER, Token::EOF, vec![]);
             }
             _ => panic!("Invalid syntax"),
         }
@@ -101,7 +110,7 @@ impl Parser {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::ASTNode;
+    use crate::ast::{ASTNode, ASTNodeType};
     use crate::parser::Parser;
     use crate::token::Token;
 
@@ -112,6 +121,7 @@ mod tests {
         assert_eq!(
             parser.parse(),
             ASTNode {
+                node_type: ASTNodeType::INTEGER,
                 token: Token::INTEGER(0),
                 children: vec![]
             }
@@ -125,6 +135,7 @@ mod tests {
         assert_eq!(
             parser.parse(),
             ASTNode {
+                node_type: ASTNodeType::INTEGER,
                 token: Token::INTEGER(2137),
                 children: vec![]
             }
@@ -138,17 +149,38 @@ mod tests {
         assert_eq!(
             parser.parse(),
             ASTNode {
+                node_type: ASTNodeType::BINOP,
                 token: Token::PLUS,
                 children: vec![
                     ASTNode {
+                        node_type: ASTNodeType::INTEGER,
                         token: Token::INTEGER(2),
                         children: vec![]
                     },
                     ASTNode {
+                        node_type: ASTNodeType::INTEGER,
                         token: Token::INTEGER(3),
                         children: vec![]
                     }
                 ]
+            }
+        );
+    }
+
+    #[test]
+    fn test_unary_operator() {
+        let text = String::from("-3");
+        let mut parser = Parser::new(&text);
+        assert_eq!(
+            parser.parse(),
+            ASTNode {
+                node_type: ASTNodeType::UNOP,
+                token: Token::MINUS,
+                children: vec![ASTNode {
+                    node_type: ASTNodeType::INTEGER,
+                    token: Token::INTEGER(3),
+                    children: vec![]
+                }]
             }
         );
     }
