@@ -28,7 +28,7 @@ impl Interpreter {
             Token::PLUS | Token::MINUS | Token::MUL | Token::DIV => {
                 return self.visit_binop(node);
             }
-            _ => panic!("Error"),
+            _ => panic!("Visitor unmatch"),
         }
     }
 
@@ -49,7 +49,7 @@ impl Interpreter {
             Token::DIV => {
                 return left_val / right_val;
             }
-            _ => panic!("Error"),
+            _ => panic!("Visitor unmatch"),
         }
     }
 
@@ -58,7 +58,7 @@ impl Interpreter {
             Token::INTEGER(i) => {
                 return i;
             }
-            _ => panic!("Error"),
+            _ => panic!("Visitor unmatch"),
         }
     }
 }

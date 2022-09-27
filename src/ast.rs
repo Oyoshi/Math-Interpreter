@@ -1,5 +1,6 @@
 use crate::token::Token;
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct ASTNode {
     pub token: Token,
     pub children: Vec<ASTNode>,

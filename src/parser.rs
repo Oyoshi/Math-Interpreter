@@ -41,6 +41,10 @@ impl Parser {
             }
         }
 
+        if node.token == Token::EOF {
+            node = ASTNode::new(Token::INTEGER(0), vec![]);
+        }
+
         node
     }
 
@@ -79,6 +83,9 @@ impl Parser {
                 self.eat(Token::RPAREN);
                 return node;
             }
+            Token::EOF => {
+                return ASTNode::new(Token::EOF, vec![]);
+            }
             _ => panic!("Invalid syntax"),
         }
     }
@@ -87,7 +94,62 @@ impl Parser {
         if token == self.current_token {
             self.current_token = self.lexer.get_next_token();
         } else {
-            panic!("Invalid syntax");
+            panic!("Invalid token");
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ast::ASTNode;
+    use crate::parser::Parser;
+    use crate::token::Token;
+
+    #[test]
+    fn test_empty_string() {
+        let text = String::from("");
+        let mut parser = Parser::new(&text);
+        assert_eq!(
+            parser.parse(),
+            ASTNode {
+                token: Token::INTEGER(0),
+                children: vec![]
+            }
+        );
+    }
+
+    #[test]
+    fn test_integer() {
+        let text = String::from("2137");
+        let mut parser = Parser::new(&text);
+        assert_eq!(
+            parser.parse(),
+            ASTNode {
+                token: Token::INTEGER(2137),
+                children: vec![]
+            }
+        );
+    }
+
+    #[test]
+    fn test_binary_operator() {
+        let text = String::from("2  + 3");
+        let mut parser = Parser::new(&text);
+        assert_eq!(
+            parser.parse(),
+            ASTNode {
+                token: Token::PLUS,
+                children: vec![
+                    ASTNode {
+                        token: Token::INTEGER(2),
+                        children: vec![]
+                    },
+                    ASTNode {
+                        token: Token::INTEGER(3),
+                        children: vec![]
+                    }
+                ]
+            }
+        );
     }
 }

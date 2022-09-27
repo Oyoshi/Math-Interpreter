@@ -25,6 +25,10 @@ fn main() {
         let text = get_input();
         let mut interpreter = Interpreter::new(&text);
         let result = interpreter.interpret();
-        println!("\n{} = {}\n", text, result);
+        println!(
+            "\n{} = {}\n",
+            if text == "" { String::from("0") } else { text },
+            result
+        );
     }
 }
