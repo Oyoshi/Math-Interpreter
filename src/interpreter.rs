@@ -1,83 +1,64 @@
-use crate::lexer::Lexer;
-use crate::lexer::Token;
+use crate::ast::ASTNode;
+use crate::parser::Parser;
+use crate::token::Token;
 
 pub struct Interpreter {
-    lexer: Lexer,
-    current_token: Token,
+    parser: Parser,
 }
 
 impl Interpreter {
-    pub fn new(lexer: Lexer) -> Interpreter {
-        let mut interpreter = Interpreter {
-            lexer: lexer,
-            current_token: Token::EOF,
+    pub fn new(input: &String) -> Interpreter {
+        let interpreter = Interpreter {
+            parser: Parser::new(&input),
         };
-        interpreter.current_token = interpreter.lexer.get_next_token();
 
         interpreter
     }
 
-    pub fn expr(&mut self) -> i32 {
-        let mut result = self.term();
-
-        while self.current_token == Token::PLUS || self.current_token == Token::MINUS {
-            match self.current_token {
-                Token::PLUS => {
-                    self.eat(Token::PLUS);
-                    result += self.term();
-                }
-                Token::MINUS => {
-                    self.eat(Token::MINUS);
-                    result -= self.term();
-                }
-                _ => panic!("Invalid syntax"),
-            }
-        }
-
-        result
+    pub fn interpret(&mut self) -> i32 {
+        let tree = self.parser.parse();
+        return self.visit(&tree);
     }
 
-    fn term(&mut self) -> i32 {
-        let mut result = self.factor();
-
-        while self.current_token == Token::MUL || self.current_token == Token::DIV {
-            match self.current_token {
-                Token::MUL => {
-                    self.eat(Token::MUL);
-                    result *= self.term();
-                }
-                Token::DIV => {
-                    self.eat(Token::DIV);
-                    result /= self.term();
-                }
-                _ => panic!("Invalid syntax"),
+    fn visit(&self, node: &ASTNode) -> i32 {
+        match node.token {
+            Token::INTEGER(_) => {
+                return self.visit_num(node);
             }
+            Token::PLUS | Token::MINUS | Token::MUL | Token::DIV => {
+                return self.visit_binop(node);
+            }
+            _ => panic!("Error"),
         }
-
-        result
     }
 
-    fn factor(&mut self) -> i32 {
-        match self.current_token {
+    fn visit_binop(&self, node: &ASTNode) -> i32 {
+        let left_val = self.visit(&node.children[0]);
+        let right_val = self.visit(&node.children[1]);
+
+        match node.token {
+            Token::PLUS => {
+                return left_val + right_val;
+            }
+            Token::MINUS => {
+                return left_val - right_val;
+            }
+            Token::MUL => {
+                return left_val * right_val;
+            }
+            Token::DIV => {
+                return left_val / right_val;
+            }
+            _ => panic!("Error"),
+        }
+    }
+
+    fn visit_num(&self, node: &ASTNode) -> i32 {
+        match node.token {
             Token::INTEGER(i) => {
-                self.eat(Token::INTEGER(i));
                 return i;
             }
-            Token::LPAREN => {
-                self.eat(Token::LPAREN);
-                let result = self.expr();
-                self.eat(Token::RPAREN);
-                return result;
-            }
-            _ => panic!("Invalid factor"),
-        }
-    }
-
-    fn eat(&mut self, token: Token) {
-        if token == self.current_token {
-            self.current_token = self.lexer.get_next_token();
-        } else {
-            panic!("Invalid syntax");
+            _ => panic!("Error"),
         }
     }
 }
@@ -85,37 +66,32 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
     use crate::interpreter::Interpreter;
-    use crate::lexer::Lexer;
 
     #[test]
     fn test_basic_addition() {
         let text = String::from("5+9");
-        let lexer = Lexer::new(text);
-        let mut interpreter = Interpreter::new(lexer);
-        assert_eq!(interpreter.expr(), 14);
+        let mut interpreter = Interpreter::new(&text);
+        assert_eq!(interpreter.interpret(), 14);
     }
 
     #[test]
     fn test_basic_substraction_with_multiple_whitespaces() {
         let text = String::from("   5              -   3");
-        let lexer = Lexer::new(text);
-        let mut interpreter = Interpreter::new(lexer);
-        assert_eq!(interpreter.expr(), 2);
+        let mut interpreter = Interpreter::new(&text);
+        assert_eq!(interpreter.interpret(), 2);
     }
 
     #[test]
     fn test_mutiple_additions_and_substractions() {
         let text = String::from("5 + 9 - 3 - 1 + 2 -4");
-        let lexer = Lexer::new(text);
-        let mut interpreter = Interpreter::new(lexer);
-        assert_eq!(interpreter.expr(), 8);
+        let mut interpreter = Interpreter::new(&text);
+        assert_eq!(interpreter.interpret(), 8);
     }
 
     #[test]
     fn test_complex_expression_with_parenthesis() {
         let text = String::from("(3*     (4 - 1) + 6)    *   2");
-        let lexer = Lexer::new(text);
-        let mut interpreter = Interpreter::new(lexer);
-        assert_eq!(interpreter.expr(), 30);
+        let mut interpreter = Interpreter::new(&text);
+        assert_eq!(interpreter.interpret(), 30);
     }
 }

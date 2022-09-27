@@ -1,14 +1,4 @@
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Token {
-    INTEGER(i32),
-    PLUS,
-    MINUS,
-    MUL,
-    DIV,
-    LPAREN,
-    RPAREN,
-    EOF,
-}
+use crate::token::Token;
 
 pub struct Lexer {
     input: String,
@@ -17,9 +7,9 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    pub fn new(input: String) -> Lexer {
+    pub fn new(input: &String) -> Lexer {
         let mut lexer = Lexer {
-            input: input,
+            input: input.to_string(),
             current_pos: -1,
             current_char: None,
         };
@@ -99,26 +89,26 @@ impl Lexer {
 #[cfg(test)]
 mod tests {
     use crate::lexer::Lexer;
-    use crate::lexer::Token;
+    use crate::token::Token;
 
     #[test]
     fn test_empty_token() {
         let text = String::from("");
-        let mut lexer = Lexer::new(text);
+        let mut lexer = Lexer::new(&text);
         assert_eq!(lexer.get_next_token(), Token::EOF);
     }
 
     #[test]
     fn test_integer_token() {
         let text = String::from("2137");
-        let mut lexer = Lexer::new(text);
+        let mut lexer = Lexer::new(&text);
         assert_eq!(lexer.get_next_token(), Token::INTEGER(2137));
     }
 
     #[test]
     fn test_non_integer_token() {
         let text = String::from("+");
-        let mut lexer = Lexer::new(text);
+        let mut lexer = Lexer::new(&text);
         assert_eq!(lexer.get_next_token(), Token::PLUS);
     }
 
@@ -126,7 +116,7 @@ mod tests {
     #[should_panic]
     fn test_token_does_not_exist() {
         let text = String::from("&");
-        let mut lexer = Lexer::new(text);
+        let mut lexer = Lexer::new(&text);
         lexer.get_next_token();
     }
 }

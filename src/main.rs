@@ -1,8 +1,13 @@
 use std::io;
 use std::io::Write;
 
+mod ast;
 mod interpreter;
 mod lexer;
+mod parser;
+mod token;
+
+use crate::interpreter::Interpreter;
 
 fn get_input() -> String {
     let mut input = String::new();
@@ -18,9 +23,8 @@ fn get_input() -> String {
 fn main() {
     loop {
         let text = get_input();
-        let lexer = lexer::Lexer::new(text.clone());
-        let mut interpreter = interpreter::Interpreter::new(lexer);
-        let result = interpreter.expr();
+        let mut interpreter = Interpreter::new(&text);
+        let result = interpreter.interpret();
         println!("\n{} = {}\n", text, result);
     }
 }
