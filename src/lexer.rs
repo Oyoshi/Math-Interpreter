@@ -80,17 +80,17 @@ impl Lexer {
         }
     }
 
-    // TODO - refactor this method
     fn integer(&mut self) -> i32 {
-        let mut result = String::new();
+        let begin_idx = self.current_pos.clone() as usize;
         while let Some(current_char) = self.current_char {
             if current_char.is_digit(10) {
-                result.push(current_char);
                 self.advance();
             } else {
                 break;
             }
         }
+        let end_idx = self.current_pos.clone() as usize;
+        let result = &self.input[begin_idx..end_idx];
 
         result.parse::<i32>().unwrap()
     }

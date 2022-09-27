@@ -20,10 +20,8 @@ impl Interpreter {
     pub fn expr(&mut self) -> i32 {
         let mut result = self.term();
 
-        while self.current_token.clone() == Token::PLUS
-            || self.current_token.clone() == Token::MINUS
-        {
-            match self.current_token.clone() {
+        while self.current_token == Token::PLUS || self.current_token == Token::MINUS {
+            match self.current_token {
                 Token::PLUS => {
                     self.eat(Token::PLUS);
                     result += self.term();
@@ -42,8 +40,8 @@ impl Interpreter {
     fn term(&mut self) -> i32 {
         let mut result = self.factor();
 
-        while self.current_token.clone() == Token::MUL || self.current_token.clone() == Token::DIV {
-            match self.current_token.clone() {
+        while self.current_token == Token::MUL || self.current_token == Token::DIV {
+            match self.current_token {
                 Token::MUL => {
                     self.eat(Token::MUL);
                     result *= self.term();
@@ -60,7 +58,7 @@ impl Interpreter {
     }
 
     fn factor(&mut self) -> i32 {
-        match self.current_token.clone() {
+        match self.current_token {
             Token::INTEGER(i) => {
                 self.eat(Token::INTEGER(i));
                 return i;
@@ -76,7 +74,7 @@ impl Interpreter {
     }
 
     fn eat(&mut self, token: Token) {
-        if token == self.current_token.clone() {
+        if token == self.current_token {
             self.current_token = self.lexer.get_next_token();
         } else {
             panic!("Invalid syntax");
@@ -111,5 +109,13 @@ mod tests {
         let lexer = Lexer::new(text);
         let mut interpreter = Interpreter::new(lexer);
         assert_eq!(interpreter.expr(), 8);
+    }
+
+    #[test]
+    fn test_complex_expression_with_parenthesis() {
+        let text = String::from("(3*     (4 - 1) + 6)    *   2");
+        let lexer = Lexer::new(text);
+        let mut interpreter = Interpreter::new(lexer);
+        assert_eq!(interpreter.expr(), 30);
     }
 }
