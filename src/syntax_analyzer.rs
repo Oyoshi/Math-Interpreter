@@ -1,5 +1,5 @@
 use crate::ast::{ASTNode, ASTNodeType};
-use crate::lexer::Lexer;
+use crate::lexical_analyzer::Lexer;
 use crate::token::Token;
 
 pub struct Parser {
@@ -23,18 +23,18 @@ impl Parser {
     }
 
     fn expr(&mut self) -> ASTNode {
-        let mut node = self.term();
+        let mut node = self.pow();
 
         while self.current_token == Token::PLUS || self.current_token == Token::MINUS {
             match self.current_token {
                 Token::PLUS => {
                     self.eat(Token::PLUS);
-                    let children: Vec<ASTNode> = vec![node, self.term()];
+                    let children: Vec<ASTNode> = vec![node, self.pow()];
                     node = ASTNode::new(ASTNodeType::BINOP, Token::PLUS, children);
                 }
                 Token::MINUS => {
                     self.eat(Token::MINUS);
-                    let children: Vec<ASTNode> = vec![node, self.term()];
+                    let children: Vec<ASTNode> = vec![node, self.pow()];
                     node = ASTNode::new(ASTNodeType::BINOP, Token::MINUS, children);
                 }
                 _ => panic!("Invalid syntax"),
@@ -43,6 +43,17 @@ impl Parser {
 
         if node.token == Token::EOF {
             node = ASTNode::new(ASTNodeType::INTEGER, Token::INTEGER(0), vec![]);
+        }
+
+        node
+    }
+
+    fn pow(&mut self) -> ASTNode {
+        let mut node = self.term();
+        while self.current_token == Token::POW {
+            let token = self.current_token.clone();
+            self.eat(Token::POW);
+            node = ASTNode::new(ASTNodeType::BINOP, token, vec![node, self.term()]);
         }
 
         node
@@ -110,7 +121,7 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use crate::ast::{ASTNode, ASTNodeType};
-    use crate::parser::Parser;
+    use crate::syntax_analyzer::Parser;
     use crate::token::Token;
 
     #[test]

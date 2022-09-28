@@ -1,20 +1,19 @@
 # math-interpreter
 
-Prototype of a math interpreter. Because this project was created only for the learning purpose so there are some limitations.
+Prototype of a math interpreter. Because this project was created only for the learning purpose so there are some limitations sorry :trollface: :
 
-1. Supports five binary operators: `+`, `-`, `*`, `/`, `^`
-2. Supports two unary operators: `+`, `-`
-3. Supports only integers (`i32`) - sorry :trollface:
+1. supports five binary operators: `+`, `-`, `*`, `/`, `^`
+2. supports two unary operators: `+`, `-`
+3. supports only integers `i32`
 
 ## Demo
 TODO
 
 ## Build & Run :construction_worker:
 
-1. Build unoptimized with debug info: `cargo build`
-2. Build optimized production: `cargo build --release`
+1. Unoptimized debug build: `cargo build`
+2. Optimized production build: `cargo build --release`
 3. Run all tests: `cargo test`
-
 
 ## Flow
 
@@ -25,10 +24,10 @@ Input string is being converted by the **lexer** (**lexical analyzer**,
 Typical algebraic expression (might) consists of **Terms**, **Factors**, **Powers**, **Coefficients** and **Constants**.In this case I've made little simplification. It's easily visible in the grammar (for the pragmatic reason I'm using EBNF notation):
 
 ```
-expr   : power ((PLUS | MINUS) power)*
-power  : term (POW term)*
-term   : factor ((MUL | DIV) power)*
-factor : (PLUS | MINUS) factor | INTEGER | LPAREN expr RPAREN
+expr   = power ((PLUS | MINUS) power)*
+power  = term (POW term)*
+term   = factor ((MUL | DIV) power)*
+factor = (PLUS | MINUS) factor | INTEGER | LPAREN expr RPAREN
 ```
 
 ## References:

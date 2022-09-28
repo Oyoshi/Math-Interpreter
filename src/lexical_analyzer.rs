@@ -46,6 +46,10 @@ impl Lexer {
                     self.advance();
                     return Token::DIV;
                 }
+                '^' => {
+                    self.advance();
+                    return Token::POW;
+                }
                 '(' => {
                     self.advance();
                     return Token::LPAREN;
@@ -88,7 +92,7 @@ impl Lexer {
 
 #[cfg(test)]
 mod tests {
-    use crate::lexer::Lexer;
+    use crate::lexical_analyzer::Lexer;
     use crate::token::Token;
 
     #[test]

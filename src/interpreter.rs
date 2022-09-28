@@ -1,5 +1,5 @@
 use crate::ast::{ASTNode, ASTNodeType};
-use crate::parser::Parser;
+use crate::syntax_analyzer::Parser;
 use crate::token::Token;
 
 pub struct Interpreter {
@@ -35,23 +35,48 @@ impl Interpreter {
     }
 
     fn visit_binop(&self, node: &ASTNode) -> i32 {
-        let left_val = self.visit(&node.children[0]);
-        let right_val = self.visit(&node.children[1]);
+        let lhs = self.visit(&node.children[0]);
+        let rhs = self.visit(&node.children[1]);
 
         match node.token {
             Token::PLUS => {
-                return left_val + right_val;
+                return lhs + rhs;
             }
             Token::MINUS => {
-                return left_val - right_val;
+                return lhs - rhs;
             }
             Token::MUL => {
-                return left_val * right_val;
+                return lhs * rhs;
             }
             Token::DIV => {
-                return left_val / right_val;
+                return lhs / rhs;
+            }
+            Token::POW => {
+                return self.exp_by_squaring(lhs, rhs);
             }
             _ => panic!("Visitor unmatch"),
+        }
+    }
+
+    // TODO - typing for 1 / x
+    fn exp_by_squaring(&self, x: i32, n: i32) -> i32 {
+        if n < 0 {
+            return self.exp_by_squaring(1 / x, -n);
+        }
+        else if n == 0 {
+            return 1;
+        }
+        else if n == 1 {
+            return x;
+        }
+        else if n % 2 == 0 {
+            return self.exp_by_squaring(x * x,  n / 2);
+        }
+        else if n % 2 == 1 {
+            return x * self.exp_by_squaring(x * x, (n - 1) / 2);
+        }
+        else {
+            panic!("Invalid arguments");
         }
     }
 
@@ -105,9 +130,16 @@ mod tests {
     }
 
     #[test]
-    fn test_complex_expression_with_parenthesis() {
+    fn test_complex_expression_with_parenthesis_1() {
         let text = String::from("(3*     -(4 - 1) + 6)    *   2");
         let mut interpreter = Interpreter::new(&text);
         assert_eq!(interpreter.interpret(), -6);
+    }
+
+    #[test]
+    fn test_complex_expression_with_parenthesis_2() {
+        let text = String::from("3          + 2^4 - (2*3)   ^ 2");
+        let mut interpreter = Interpreter::new(&text);
+        assert_eq!(interpreter.interpret(), -17);
     }
 }

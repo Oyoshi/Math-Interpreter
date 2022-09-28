@@ -5,6 +5,7 @@ pub enum Token {
     MINUS,
     MUL,
     DIV,
+    POW,
     LPAREN,
     RPAREN,
     EOF,
