@@ -1,11 +1,11 @@
 use std::io;
 use std::io::Write;
 
+mod ast;
 mod interpreter;
 mod lexical_analyzer;
 mod syntax_analyzer;
 mod token;
-mod ast;
 
 use crate::interpreter::Interpreter;
 

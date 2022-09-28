@@ -7,7 +7,8 @@ Prototype of a math interpreter. Because this project was created only�
 3. supports only integers `i32`
 
 ## Demo
-TODO
+
+![Math Interpreter](demos/demo.gif)
 
 ## Build & Run :construction_worker:
 

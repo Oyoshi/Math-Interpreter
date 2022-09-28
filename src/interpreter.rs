@@ -62,20 +62,15 @@ impl Interpreter {
     fn exp_by_squaring(&self, x: i32, n: i32) -> i32 {
         if n < 0 {
             return self.exp_by_squaring(1 / x, -n);
-        }
-        else if n == 0 {
+        } else if n == 0 {
             return 1;
-        }
-        else if n == 1 {
+        } else if n == 1 {
             return x;
-        }
-        else if n % 2 == 0 {
-            return self.exp_by_squaring(x * x,  n / 2);
-        }
-        else if n % 2 == 1 {
+        } else if n % 2 == 0 {
+            return self.exp_by_squaring(x * x, n / 2);
+        } else if n % 2 == 1 {
             return x * self.exp_by_squaring(x * x, (n - 1) / 2);
-        }
-        else {
+        } else {
             panic!("Invalid arguments");
         }
     }
