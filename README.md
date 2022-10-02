@@ -14,7 +14,9 @@ Prototype of a math interpreter. Because this project was created only�
 
 1. Unoptimized debug build: `cargo build`
 2. Optimized production build: `cargo build --release`
-3. Run all tests: `cargo test`
+3. Run app from debug build: `cargo run`
+4. Run app from release build: `cargo run --release`
+5. Run all tests: `cargo test`
 
 ## Flow
 
